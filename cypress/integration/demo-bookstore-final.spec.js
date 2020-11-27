@@ -4,21 +4,20 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
   const bookAuthor = 'Richard E. Silverman'
   const bookTitle  = 'Git Pocket Guide'
 
-  context('UI tests', () => {
+  context('separate UI + API tests', () => {
     it('1. UI - validate 1st book on screen', () => {
-      cy.visit('/')
+      // visits UI of the bookstore
+      cy.visit('/')   // uses baseUrl from cypress.json
       cy.url().should('include', 'books')
       cy.get('[id="see-book-Git Pocket Guide"] a').should('contain', bookTitle)
       cy.get('[id="see-book-Git Pocket Guide"]').parent().parent().parent().children().should('contain', bookAuthor)
     })
-  })
-  
-  context('API tests', () => {
     
-    it('1. API - validate 1st book in response', () => {
+    it('2. API - validate 1st book in response', () => {
+      // requests an API of the bookstore
       cy.request({
         method: 'GET',
-        url:     apiUrl+'/BookStore/v1/Books'
+        url:     apiUrl+'/BookStore/v1/Books'   // uses apiUrl from cypress.json
       })
         .then((response) => {
           cy.log(response.body.books[0].author)
@@ -31,9 +30,11 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
     })
   })
 
-  context('API + UI tests', () => {
+  context('combined API + UI tests', () => {
+    // test cases to validate the result from the API in the UI
     
     it('1. API + UI - validate 1st book from response on screen', () => {
+      // first call the API
       cy.request({
         method: 'GET',
         url:     apiUrl+'/BookStore/v1/Books'
@@ -45,6 +46,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
           let isbn = response.body.books[0].isbn
           cy.log('isbn: '+ isbn)
 
+          // then validate the same in the UI
           cy.log('- switch from API to UI -')
           cy.visit('/')
           cy.url().should('include', 'books')
@@ -53,8 +55,13 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
         })
     })
 
+    // 2 different ways of looping through the response
+    // 2a) for-loop
+    // 2b) forEach-loop
     it('2a. API + UI - validate all books from response on screen - for-loop', () => {
       var books
+
+      // first call the API
       cy.request({
         method: 'GET',
         url:     apiUrl+'/BookStore/v1/Books'
@@ -69,6 +76,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
             cy.log('book: '+ index, books[index])
           }
 
+          // then validate the same in the UI
           cy.log('- switch from API to UI -')
           cy.visit('/') // cypress.json: "baseUrl": "https://demoqa.com/books"
 
@@ -84,6 +92,8 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
 
     it('2b. API + UI - validate all books from response on screen - forEach-loop', () => {
       var books
+
+      // first call the API
       cy.request({
         method: 'GET',
         url:     apiUrl+'/BookStore/v1/Books'
@@ -98,6 +108,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
             cy.log('book: '+index, book)
           })
 
+          // then validate the same in the UI
           cy.log('- switch from API to UI -')
           cy.visit('/') // cypress.json: "baseUrl": "https://demoqa.com/books"
 
@@ -112,8 +123,9 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
     })
   })
 
-  context.only('STUBBING', () => {
+  context('STUBBING', () => {
     it('1. NO STUB - read books from api', () => {
+      // test case added for comparing the real API response to stubbed rsponses in test cases 2 + 3
       cy.request({
         method: 'GET',
         url:     apiUrl+'/BookStore/v1/Books'
@@ -131,6 +143,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
     it('2. STUB - read books from stub', () => {
       cy.fixture('books4.json').as('stubResponse')  // books4.json has 4 books
       // cy.fixture('books8.json').as('stubResponse')  // books8.json has 8 books
+
       cy.server().route({ // server + route are removed from Cypress' next major version; replaced by intercept
         method:   'GET',
         url:      apiUrl+'/BookStore/v1/Books',
@@ -147,7 +160,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
         })
     })
     
-    it.only('3. STUB - NEW: intercept - read books from stub', () => {
+    it('3. STUB - NEW: intercept - read books from stub', () => {
       // new in Cypress 6.0: cy.intercept()
       // NOT a 1-on-1 replacement for cy.server().route()
       cy.intercept({
