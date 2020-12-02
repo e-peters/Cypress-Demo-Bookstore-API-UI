@@ -1,8 +1,8 @@
 describe('Demo Cypress API+UI testing - Bookstore', () => {
 
   const apiUrl = Cypress.env('apiUrl')  // cypress.json: "env":{ "apiUrl": "https://demoqa.com" }
-  const bookAuthor = 'Richard E. Silverman'
-  const bookTitle  = 'Git Pocket Guide'
+  var   bookAuthor = 'Richard E. Silverman'
+  var   bookTitle  = 'Git Pocket Guide'
 
   context('separate UI + API tests', () => {
     it('1. UI - validate 1st book on screen', () => {
@@ -141,6 +141,8 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
     })
 
     it('2. STUB - read books from stub', () => {
+      bookTitle = 'Demo Book 1'
+      bookAuthor = 'Edwin Peters'
       cy.fixture('books4.json').as('stubResponse')  // books4.json has 4 books
       // cy.fixture('books8.json').as('stubResponse')  // books8.json has 8 books
 
@@ -153,10 +155,10 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
         .as('stub')
         .then(stub => {
           expect(stub).to.not.be.null
-          expect(stub.length).to.eq(4)              // books4.json has 4 books
-          // expect(stub.length).to.be.eql(8)          // books8.json has 8 books
-          expect(stub[0].title).to.eql(bookTitle+2) // title has an additional 2 to the title in the stub file
-          expect(stub[0].author).to.eql(bookAuthor)
+          expect(stub.books.length).to.eq(4)              // books4.json has 4 books
+          // expect(stub.books.length).to.be.eql(8)          // books8.json has 8 books
+          expect(stub.books[0].title).to.eql(bookTitle) // title has an additional 2 to the title in the stub file
+          expect(stub.books[0].author).to.eql(bookAuthor)
         })
     })
     
@@ -179,7 +181,7 @@ describe('Demo Cypress API+UI testing - Bookstore', () => {
         .then(response => {
           expect(response.statusCode).to.eq(200)
           expect(response.body).to.not.be.null
-          expect(response.body.length).to.eq(4)   // number of books from stub
+          expect(response.body.books.length).to.eq(4)   // number of books from stub
       })
     })
 
